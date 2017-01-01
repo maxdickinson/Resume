@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 pygame.init()
+os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
 
 #create white screen
 screen = pygame.display.set_mode((800, 800))
@@ -50,7 +51,7 @@ class Utility:
 class TestSprite(pygame.sprite.Sprite,Utility):
     #basic sprite class to test how images work
     def __init__(self,x,y,w,h):
-        os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
+
         super().__init__()
         Utility.__init__(self)
         #images preloaded into sprite as array
@@ -192,7 +193,7 @@ class gameControl:
         pygame.display.update()
         pygame.display.flip()
 
-
+color =0
 gc = gameControl()
 while True:
     #erase
@@ -203,8 +204,14 @@ while True:
             sys.exit()
         if event.type == pygame.BUTTON_X1:
 
-            gc.clickcounter +=1
+            if color > 255:
+                color = 0
 
+            button = pygame.draw.rect(screen, (color, 0, 0), (580, 20, 40, 40))
+            pygame.display.update()
+            pygame.display.flip()
+            gc.clickcounter +=1
+            color += 10
 
         elif event.type == pygame.MOUSEBUTTONDOWN and button.collidepoint(pygame.mouse.get_pos()) and gc.k< len(gc.clsss):
             if gc.checkDone(gc.flags,0,0):
@@ -216,7 +223,7 @@ while True:
                 while gc.fromLeft(gc.creates,screen):
                     gc.walkOn(screen,gc.clsss[gc.k],gc.groups[gc.k],gc.creates[gc.k])
                 gc.k+=1
-
+            #every 10 clicks run the next one
             elif ((gc.clickcounter % 10) == 2) & gc.checkDone(gc.flags,1,0):
 
             #thread is locked while this is happening
