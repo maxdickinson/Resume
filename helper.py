@@ -77,6 +77,48 @@ class TestSprite(pygame.sprite.Sprite,Utility):
         self.image = self.images[self.index]
         self.rect.x += 1
         self.speed()
+class spriteSheet(pygame.sprite.Sprite,Utility):
+    def __init__(self,frameWidth,frameHeight,startFrame,endFrame):
+        os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
+
+        self.rect = pygame.Rect(0,0,frameWidth,frameHeight)
+        self.sheet = pygame.image.load("fireworks.png")
+
+        w, h = self.sheet.get_rect().size
+        self.images = []
+        self.framesOnRow = w//self.rect.w
+        self.framesOnCol = h // self.rect.h
+        self.sequence = [i for i in range(startFrame, endFrame)]
+        self.counter = 0
+        self.currentFrame = 0
+
+        while self.currentFrame < len(self.sequence):
+            row = self.sequence[self.currentFrame] // self.framesOnRow
+            col = self.sequence[self.currentFrame] % self.framesOnRow
+            self.images.append(self.sheet.subsurface(col * frameWidth, row * frameHeight, frameWidth, frameHeight))
+            self.currentFrame += 1
+        self.currentFrame = 0
+        self.image= self.images[self.currentFrame]
+
+    def update(self,speed):
+        if self.counter == speed:
+
+            self.currentFrame = (self.currentFrame + 1) % len(self.sequence)
+            print(self.currentFrame)
+        self.counter += 1
+        if self.counter > speed:
+            self.counter = 0
+        self.image = self.images[self.currentFrame]
+    def draw(self,screen):
+        print(self.currentFrame)
+        screen.blit(self.image,(self.rect.x,self.rect.y))
+    def moveUp(self):
+        self.rect.y += 1
+
+a=spriteSheet(67,46,6,13)
+a.draw(screen)
+def fullExplosion()
+
 
 class TextBlock(Utility):
     #make a text block that can move, not wrapped yet
@@ -122,6 +164,11 @@ def create(cls):
 #update
 pygame.display.update()
 pygame.display.flip()
+
+class useSound:
+    def __init__(self,file):
+        pygame.mixer.music.load(file)
+        pygame.mixer.music.play(1)
 
 
 
@@ -174,6 +221,7 @@ class gameControl:
     def fromLeft(self,sprite,screen):
         return sprite[self.k].rect.right < screen.get_rect().width / 2
 
+
     def walkOn(self,screen, cls, my_group, c):
         # block the sprite and text, can somehow combine group and c
         for i in cls:
@@ -196,13 +244,23 @@ class gameControl:
 color =0
 gc = gameControl()
 while True:
+    milliseconds = pygame.time.Clock().tick(30)
+
     #erase
    # screen.blit(a.cover,a.rect)
     for event in pygame.event.get():
+
+        pygame.display.update()
+        pygame.display.flip()
         #print(gc.clickcounter)
         if event.type == pygame.QUIT:
             sys.exit()
         if event.type == pygame.BUTTON_X1:
+
+
+
+
+
 
             if color > 255:
                 color = 0
@@ -212,9 +270,10 @@ while True:
             pygame.display.flip()
             gc.clickcounter +=1
             color += 10
-
+            useSound('ogg sounds\\collect_point_00.ogg')
         elif event.type == pygame.MOUSEBUTTONDOWN and button.collidepoint(pygame.mouse.get_pos()) and gc.k< len(gc.clsss):
             if gc.checkDone(gc.flags,0,0):
+                useSound('ogg sounds\\jingle_win_00.ogg')
             #thread is locked while this is happening
             #mark done move to next one
                 gc.flags[gc.i] = 1
@@ -228,6 +287,7 @@ while True:
 
             #thread is locked while this is happening
             #mark done move to next one
+                useSound('ogg sounds\\jingle_win_00.ogg')
                 gc.flags[gc.j] = 1
                 gc.i+=1
                 gc.j+=1
