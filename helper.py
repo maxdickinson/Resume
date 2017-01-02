@@ -113,11 +113,27 @@ class spriteSheet(pygame.sprite.Sprite,Utility):
         print(self.currentFrame)
         screen.blit(self.image,(self.rect.x,self.rect.y))
     def moveUp(self):
-        self.rect.y += 1
+        self.rect.y += 10
+    def moveDown(self):
+        self.rect.y -= 10
 
-a=spriteSheet(67,46,6,13)
+a=spriteSheet(67,46,15,19)
 a.draw(screen)
-def fullExplosion()
+def fullExplosion(sprite):
+    while sprite.rect.y < 100:
+        sprite.moveUp()
+        sprite.draw(screen)
+        pygame.display.update()
+        pygame.display.flip()
+    while sprite.currentFrame < len(sprite.sequence):
+        sprite.update(3)
+        pygame.display.update()
+        pygame.display.flip()
+    while sprite.rect.y > 0:
+        sprite.moveDown()
+        sprite.draw(screen)
+        pygame.display.update()
+        pygame.display.flip()
 
 
 class TextBlock(Utility):
@@ -256,11 +272,7 @@ while True:
         if event.type == pygame.QUIT:
             sys.exit()
         if event.type == pygame.BUTTON_X1:
-
-
-
-
-
+            fullExplosion(a)
 
             if color > 255:
                 color = 0
