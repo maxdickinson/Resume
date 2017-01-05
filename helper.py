@@ -5,12 +5,23 @@ pygame.init()
 os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
 
 #create white screen
-screen = pygame.display.set_mode((800, 800))
-screen.fill((255, 255, 255))
-
+screen = pygame.display.set_mode((600,600))
 #initial buttons
-button = pygame.draw.rect(screen, (100, 100, 100), (580, 20, 40, 40))
 
+
+class Background(pygame.sprite.Sprite):
+    def __init__(self,file,location):
+        self.image  = pygame.image.load(file) # this is a surface
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = location
+
+bgnd1 = Background("background1.png", (0,0))
+screen.blit(bgnd1.image,bgnd1.rect)
+print(screen.get_rect())
+button = pygame.draw.rect(screen, (100, 100, 100), (560, 20, 40, 40))
+
+#pygame.display.update()
+#pygame.display.flip()
 class Utility:
     #smorgasboard of assisting functions
     def __init__(self):
@@ -78,12 +89,13 @@ class TestSprite(pygame.sprite.Sprite,Utility):
         self.rect.x += 1
         self.speed()
 class spriteSheet(pygame.sprite.Sprite,Utility):
-    def __init__(self,frameWidth,frameHeight,startFrame,endFrame):
+    def __init__(self,x,y,frameWidth,frameHeight,startFrame,endFrame):
         os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
 
-        self.rect = pygame.Rect(0,0,frameWidth,frameHeight)
+        self.rect = pygame.Rect(x,y,frameWidth,frameHeight)
         self.sheet = pygame.image.load("fireworks.png")
-
+        self.originx = x
+        self.originy = y
         w, h = self.sheet.get_rect().size
         self.images = []
         self.framesOnRow = w//self.rect.w
@@ -91,6 +103,8 @@ class spriteSheet(pygame.sprite.Sprite,Utility):
         self.sequence = [i for i in range(startFrame, endFrame)]
         self.counter = 0
         self.currentFrame = 0
+
+
 
         while self.currentFrame < len(self.sequence):
             row = self.sequence[self.currentFrame] // self.framesOnRow
@@ -100,42 +114,99 @@ class spriteSheet(pygame.sprite.Sprite,Utility):
         self.currentFrame = 0
         self.image= self.images[self.currentFrame]
 
+        self.cover = pygame.Surface((self.image.get_rect().size))
+        self.cover.fill((255, 255, 255))
+
     def update(self,speed):
         if self.counter == speed:
 
             self.currentFrame = (self.currentFrame + 1) % len(self.sequence)
-            print(self.currentFrame)
+
         self.counter += 1
         if self.counter > speed:
             self.counter = 0
         self.image = self.images[self.currentFrame]
     def draw(self,screen):
-        print(self.currentFrame)
-        screen.blit(self.image,(self.rect.x,self.rect.y))
-    def moveUp(self):
-        self.rect.y += 10
-    def moveDown(self):
-        self.rect.y -= 10
 
-a=spriteSheet(67,46,15,19)
+        screen.blit(self.image,(self.rect.x,self.rect.y))
+    def moveUp(self,screen):
+        #takes care of erasing as well
+        screen.blit(self.cover, self.rect)
+        self.rect.y += 10
+    def moveDown(self,screen):
+        screen.blit(self.cover, self.rect)
+        self.rect.y -= 10
+    def reset(self):
+        screen.blit(self.cover, self.rect)
+        self.rect.x = self.originx
+        self.rect.y= self.originy
+
+
+
+def targetingCircle(screen,pos,radius):
+    import math
+    cover = pygame.Surface((2*int(radius) , 2*int(radius)))
+    cover.fill((255,255,255)) # chage with screen background
+    for n in reversed(range(5,radius)):
+        screen.blit(cover,(int(math.floor(pos[0]-radius)) , int(math.floor(pos[1]-radius))))
+        a = pygame.draw.circle(screen,(0,0,0),pos,n,1)
+        pygame.display.update()
+        pygame.display.flip()
+        pygame.time.wait(50)
+    return a
+
+targetingCircle(screen,(200,200),100)
+a=spriteSheet(0,0,67,46,7,13) # yellow explosion on white background, all frames
 a.draw(screen)
+leftFirework=spriteSheet(0,600,67,46,15,20)
+
 def fullExplosion(sprite):
     while sprite.rect.y < 100:
-        sprite.moveUp()
+        sprite.moveUp(screen)
         sprite.draw(screen)
         pygame.display.update()
         pygame.display.flip()
-    while sprite.currentFrame < len(sprite.sequence):
-        sprite.update(3)
+        pygame.time.wait(100)
+
+    while sprite.currentFrame < len(sprite.sequence)-1:
+        sprite.update(1)
+        sprite.draw(screen)
         pygame.display.update()
         pygame.display.flip()
+        pygame.time.wait(100)
+
     while sprite.rect.y > 0:
-        sprite.moveDown()
+        sprite.moveDown(screen)
+        pygame.time.wait(100)
         sprite.draw(screen)
         pygame.display.update()
         pygame.display.flip()
 
+    sprite.reset()
 
+def fireworkDisplay(sprite):
+    while sprite.rect.y > (1*screen.get_rect().h)/5:
+        sprite.moveDown(screen)
+        sprite.draw(screen)
+        pygame.display.update()
+        pygame.display.flip()
+        pygame.time.wait(50)
+
+    while sprite.currentFrame < len(sprite.sequence)-1:
+        sprite.update(2)
+        sprite.draw(screen)
+        pygame.display.update()
+        pygame.display.flip()
+        pygame.time.wait(100)
+
+    while sprite.rect.y < (3*screen.get_rect().h)/5:
+        sprite.moveUp(screen)
+        pygame.time.wait(50)
+        sprite.draw(screen)
+        pygame.display.update()
+        pygame.display.flip()
+
+    sprite.reset()
 class TextBlock(Utility):
     #make a text block that can move, not wrapped yet
     # doesnt do the blit just the creation
@@ -195,6 +266,7 @@ class gameControl:
         self.j=0
         self.k =0
         self.clickcounter=0
+        self.rewards = [0,3,10,30,100,300,1000]
 
         # make all the text boxes
 
@@ -230,6 +302,7 @@ class gameControl:
 
         self.groups = list(map(pygame.sprite.Group, self.creates))
         self.flags= [0 for i in range(len(self.clsss)+2)]
+        self.level = 0
 
     def checkDone(self,array,num1,num2):
         if array[self.i] == num1 and array[self.j] == num2:
@@ -259,30 +332,34 @@ class gameControl:
 
 color =0
 gc = gameControl()
+
 while True:
     milliseconds = pygame.time.Clock().tick(30)
 
     #erase
    # screen.blit(a.cover,a.rect)
     for event in pygame.event.get():
-
         pygame.display.update()
         pygame.display.flip()
         #print(gc.clickcounter)
         if event.type == pygame.QUIT:
             sys.exit()
-        if event.type == pygame.BUTTON_X1:
-            fullExplosion(a)
-
-            if color > 255:
-                color = 0
-
-            button = pygame.draw.rect(screen, (color, 0, 0), (580, 20, 40, 40))
+        elif event.type == pygame.BUTTON_X1:
+            if gc.clickcounter in gc.rewards:
+                useSound('ogg sounds\\collect_point_00.ogg')
+                fireworkDisplay(leftFirework)
+                gc.clickcounter += 1
+            else:
+                gc.clickcounter += 1
+                color += 10
+                if color > 255:
+                    color = 0
+            # make buttons automatically adujust to screen
+            button = pygame.draw.rect(screen, (color, 0, 0), (560, 20, 40, 40))
             pygame.display.update()
             pygame.display.flip()
-            gc.clickcounter +=1
-            color += 10
-            useSound('ogg sounds\\collect_point_00.ogg')
+
+
         elif event.type == pygame.MOUSEBUTTONDOWN and button.collidepoint(pygame.mouse.get_pos()) and gc.k< len(gc.clsss):
             if gc.checkDone(gc.flags,0,0):
                 useSound('ogg sounds\\jingle_win_00.ogg')
