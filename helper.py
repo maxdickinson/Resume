@@ -7,15 +7,103 @@ pygame.init()
 os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
 
 # create white screen
-screen = pygame.display.set_mode((600, 600))
+screen = pygame.display.set_mode((620, 600))
 screen.fill((255, 255, 255))
+
+screen1 = pygame.Rect(0,0,600,600)
 
 from colour import Color
 red = Color("black")
 colors = list(red.range_to(Color("red"),10))
 
-
+wh = (255,255,255)
+b = (0,0,0)
 # initial buttons
+class spriteSheet(pygame.sprite.Sprite):
+    wh = (255, 255, 255)
+    def __init__(self,file,x,y,frameWidth,frameHeight,startFrame,endFrame):
+        wh = (255, 255, 255)
+        os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
+
+        self.rect = pygame.Rect(x,y,frameWidth,frameHeight)
+        self.sheet = pygame.image.load(file).convert_alpha()
+        self.sheet.set_colorkey(wh)
+         #alpha channel already exists
+        #self.sheet.set_alpha(255)
+
+        self.originx = x
+        self.originy = y
+        w, h = self.sheet.get_rect().size
+        self.images = []
+
+        self.framesOnRow = w//self.rect.w
+        self.framesOnCol = h // self.rect.h
+        self.sequence = [i for i in range(startFrame, endFrame)]
+        self.counter = 0
+        self.currentFrame = 0
+
+
+
+        while self.currentFrame < len(self.sequence):
+            row = self.sequence[self.currentFrame] // self.framesOnRow
+            col = self.sequence[self.currentFrame] % self.framesOnRow
+            self.images.append(self.sheet.subsurface(col * frameWidth, row * frameHeight, frameWidth, frameHeight))
+            self.currentFrame += 1
+        self.currentFrame = 0
+        self.image= self.images[self.currentFrame]
+
+        self.image = self.image.convert_alpha()
+        #self.image = self.image.convert_alpha()
+        #self.image.set_alpha(0)
+        self.image.set_colorkey(wh)
+
+        self.cover = pygame.Surface((self.image.get_rect().size))
+        self.cover.set_colorkey(wh)
+        self.cover.fill((255, 255, 255))
+    def speed(self):
+        #wrapper
+        return pygame.time.wait(self.ms)
+    def update(self,speed):
+        if self.counter == speed:
+
+            self.currentFrame = (self.currentFrame + 1) % len(self.sequence)
+
+        self.counter += 1
+        if self.counter > speed:
+            self.counter = 0
+        self.image = self.images[self.currentFrame]
+
+
+        self.image = self.image.convert_alpha()
+
+        self.image.set_colorkey((wh))
+    def draw(self,screen):
+
+
+        screen.blit(self.image,(self.rect.x,self.rect.y))
+    def moveUp(self,screen):
+        #takes care of erasing as well
+        screen.blit(self.cover, self.rect)
+        self.rect.y += 10
+    def moveDown(self,screen):
+        screen.blit(self.cover, self.rect)
+        self.rect.y -= 10
+    def reset(self):
+        screen.blit(self.cover, self.rect)
+        self.rect.x = self.originx
+        self.rect.y= self.originy
+
+ladder = spriteSheet("ladder.png",400,450,20,150,0,1)
+climber = spriteSheet("climber.png",400,5,19,32,0,4)
+print(climber.image.get_alpha())
+
+frameHeight = 20
+ladArray = [i for i in range(screen.get_height() // frameHeight)]
+for i in ladArray[0:18]:
+    vineBlocks = spriteSheet("vine_bricks.png",600,i*frameHeight,20,20,i,i+1)
+
+vineBlocks = [spriteSheet("vine_bricks.png",600,i*frameHeight,20,20,i,i+1) for i in ladArray[0:18] ]
+
 
 class TextBlock:
     #make a text block that can move, not wrapped yet
@@ -56,10 +144,10 @@ screen.blit(bgnd1.image, bgnd1.rect)
 
 # 4 RECTANGLES COVERING SCREEN EVENLY
 
-a = (0, 0, screen.get_width() / 2, screen.get_height() / 2)
-b = (screen.get_width() / 2, 0, screen.get_width() / 2, screen.get_height() / 2)
-c = (0, screen.get_height() / 2, screen.get_width() / 2, screen.get_height() / 2)
-d = (screen.get_width() / 2, screen.get_height() / 2, screen.get_width() / 2, screen.get_height() / 2)
+a = (0, 0, screen1.w / 2, screen1.h / 2)
+b = (screen1.w / 2, 0, screen1.w / 2, screen1.h / 2)
+c = (0, screen1.h / 2, screen1.w / 2, screen1.h / 2)
+d = (screen1.w / 2, screen1.h / 2, screen1.w / 2, screen1.h / 2)
 recs = [a, b, c, d]
 recs1 = list(map(pygame.Rect, recs))
 recs3 = list(map(pygame.Rect, recs))
@@ -200,6 +288,17 @@ while True:
         radius -= 3
     else:
         radius = int(a[2] / 2)
+
+
+    [vineBlocks[i].draw(screen) for i in range(len(vineBlocks))]
+    for i in range(4):
+        climber.reset()
+        climber.update(30)
+        climber.draw(screen)
+        pygame.display.update()
+        pygame.display.flip()
+    ladder.draw(screen)
+
     # update
     pygame.display.update()
     pygame.display.flip()
