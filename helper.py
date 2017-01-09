@@ -92,8 +92,8 @@ class spriteSheet(pygame.sprite.Sprite):
 
         #screen.blit(self.cover, self.rect)
         self.rect.y -= 30
-    def reset(self,back):
-        screen.blit(back, self.rect)
+    def reset(self,screen):
+        screen.blit(self.cover, self.rect)
         #self.rect.x = self.originx
         #self.rect.y= self.originy
 frameHeight = 150
@@ -150,6 +150,15 @@ castleBrick = tileScreen('castle_bricks.png' , 300,0,ww,hh,42,75)
 
 longBrick = tileScreen('long_bricks.png' , 300,300,ww,hh,40,100)
 
+
+gb2 = tileScreen("green_bricks.png",0,0,ww,hh,frameHeight,frameWidth)
+
+sandBrick2 = tileScreen("sand_brick.png",0,300,ww,hh,50,150)
+#strange bug that brick rects are added to this list
+sandBrick2=sandBrick2[0::]
+castleBrick2 = tileScreen('castle_bricks.png' , 300,0,ww,hh,42,75)
+
+longBrick2 = tileScreen('long_bricks.png' , 300,300,ww,hh,40,100)
 
 class TextBlock:
     #make a text block that can move, not wrapped yet
@@ -319,10 +328,17 @@ while True:
             bl = [q ,r ,s ,t]
             recs1 = [a, b, c, d]
             index2=0
+
+    [gb2[i].reset(screen) for i in range(len(gb2))]
+    [sandBrick2[i].reset(screen) for i in range(len(sandBrick2))]
+    [castleBrick2[i].reset(screen) for i in range(len(castleBrick2))]
+    [longBrick2[i].reset(screen) for i in range(len(longBrick2))]
+
+
     screen.blit(curr.image, curr.rect)
 
     # shrink circle
-
+    curr = bgnd3
     if curr == bgnd1:
         for i in range(len(px)):
 
@@ -355,10 +371,14 @@ while True:
     elif curr == bgnd3:
 
         if len(recbri) ==0:
-            recbri.append(gb.pop().rect)
-            recbri.append(sandBrick.pop().rect)
-            recbri.append(castleBrick.pop().rect)
-            recbri.append(longBrick.pop().rect)
+            if len(gb) > 0:
+                recbri.append(gb[0].rect)
+            if len(sandBrick) > 0:
+                recbri.append(sandBrick[0].rect)
+            if len(castleBrick) > 0:
+                recbri.append(castleBrick[0].rect)
+            if len(longBrick) > 0:
+                recbri.append(longBrick[0].rect)
             unrun = True
         rpp = list(map(radpos, recbri))
         if unrun == True:
@@ -367,8 +387,10 @@ while True:
             for p in rpp:
                 pxx.append(p[1][0])
                 pxy.append(p[1][1])
-            unrun = Falsee
+            unrun = False
+            recbri2 = copy.deepcopy(recbri)
             start = [True, True, True, True]
+            #alter recbri and recbri 2
         #start = [True] * len(pxx)
         for i in range(len(pxx)):
             print(pxx[i], pxy[i] , i,radius )
@@ -425,9 +447,15 @@ while True:
         #print(len(gb))
         #print(len(sandBrick))
         #screen.blit(curr.image, curr.rect) doesnt work because surface on surface??
+        #gb2 = copy.deepcopy(gb)
+
+
         [gb[i].draw(screen) for i in range(len(gb))]
+
         [sandBrick[i].draw(screen) for i in range(len(sandBrick))]
+
         [castleBrick[i].draw(screen) for i in range(len(castleBrick))]
+
         [longBrick[i].draw(screen) for i in range(len(longBrick))]
         for oo in rpp:
             drew2 = [drawCircle2(oo, radius)]
@@ -444,6 +472,7 @@ while True:
 
 
 
+
     if len(events) > 0:
         #print(events)
         if events.pop() == "climbdown":
@@ -455,7 +484,8 @@ while True:
             pygame.display.update()
             pygame.display.flip()
             #pygame.time.wait(500)
-
+        if climber.rect.y < 0:
+            climber.rect.y = screen1.h
     climber.draw(screen)
 
     # update
