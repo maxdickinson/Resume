@@ -4,6 +4,7 @@ import os
 import math
 #import numpy
 import copy
+import random
 pygame.init()
 os.chdir("C:\\Users\\max\\Desktop\\pigwalk")
 
@@ -288,6 +289,85 @@ for i in sandBrick:
 print("ADSASDASD")
 for i in gb:
     print(i.rect)
+
+class circleActor(pygame.sprite.Sprite):
+    def __init__(self,x,y):
+        self.pos = (x,y)
+        self.radius = 50
+        self.speed = random.randint(0, 4)
+        self.i_hat = random.randint(-4, 4)
+        self.j_hat = random.randint(-4, 4)
+        if self.j_hat == 0:
+            self.j_hat = 0.1
+
+    def draw(self):
+        self.rect = pygame.draw.circle(screen, (255, 255, 0), self.pos, self.radius, 1)
+    def update(self):
+        if self.radius > 4:
+            self.radius -= 3
+        else:
+            self.radius = int(a[2] / 2)
+    def moveUp(self):
+        amount = self.j_hat
+        amount = abs(amount)
+        self.pos =  (int(self.pos[0]),int(self.pos[1]-amount))
+
+    def moveDown(self):
+        amount = self.j_hat
+        amount = abs(amount)
+
+        self.pos = (int(self.pos[0]),int(self.pos[1]+amount))
+    def moveLeft(self):
+        amount = self.i_hat
+        amount = abs(amount)
+        self.pos =  (self.pos[0] -amount ,self.pos[1])
+    def moveRight(self):
+        amount = self.i_hat
+        amount = abs(amount)
+        self.pos = (int(self.pos[0]+amount),int(self.pos[1]))
+        '''upRight
+        upLeft
+        downRight
+        downLeft
+    '''
+    def updatePos(self):
+        for i in range(self.speed):
+            if self.i_hat <= 0 and self.j_hat <0:
+                self.moveDown()
+                self.moveLeft()
+            elif self.i_hat <= 0 and self.j_hat > 0:
+                self.moveUp()
+                self.moveLeft()
+            elif self.i_hat >= 0 and self.j_hat < 0:
+                print("ran")
+                self.moveDown()
+                self.moveRight()
+            elif self.i_hat >= 0 and self.j_hat > 0:
+                self.moveUp()
+                self.moveRight()
+
+
+eee = circleActor(300 ,300)
+unrun2 = False
+rp = list(map(radpos, recs))
+circles2 = [circleActor(i[1][0], i[1][1]) for i in rp]
+circles2i = [circleActor(i[1][0], i[1][1]) for i in rp]
+circles4=[]
+circles5 = []
+[print(circles2[i].pos) for i in range(len(circles2))]
+popper = 0
+draw = [i for i in range(len(circles2))]
+#print(circles2i)
+curr= bgnd5
+E_col_cir = pygame.USEREVENT  + 1
+pygame.time.set_timer(E_col_cir, 5000)
+
+xxxx = random.randint(0, screen1.w)
+yyyy = random.randint(0, screen1.h)
+
+circles5.append(circleActor(xxxx, yyyy))
+
+
 while True:
 
     x, y = pygame.mouse.get_pos()
@@ -295,7 +375,6 @@ while True:
     # erase
     # screen.blit(a.cover,a.rect)
     recs1 = list(map(pygame.Rect, recs))
-    rp = list(map(radpos, recs))
 
     for event in pygame.event.get():
         # print(circle[0].collidepoint(pygame.mouse.get_pos()))
@@ -328,6 +407,67 @@ while True:
             bl = [q ,r ,s ,t]
             recs1 = [a, b, c, d]
             index2=0
+        elif start[0:4] == [False]*4 and nextBut.rect.collidepoint(pygame.mouse.get_pos()) and (event.type == pygame.MOUSEBUTTONDOWN) and curr == bgnd3:
+            print('ran')
+            for i in range(len(bl2)):
+                bl2[i].colr = 0
+            start = [True,True,True,True]
+            curr = bgnd4
+            recs = [a, b, c, d]
+            bl = [q ,r ,s ,t]
+            recs1 = [a, b, c, d]
+            index2=0
+            gb = tileScreen("green_bricks.png", 0, 0, ww, hh, frameHeight, frameWidth)
+
+            sandBrick = tileScreen("sand_brick.png", 0, 300, ww, hh, 50, 150)
+            # strange bug that brick rects are added to this list
+            sandBrick = sandBrick[0::]
+            castleBrick = tileScreen('castle_bricks.png', 300, 0, ww, hh, 42, 75)
+
+            longBrick = tileScreen('long_bricks.png', 300, 300, ww, hh, 40, 100)
+        elif nextBut.rect.collidepoint(pygame.mouse.get_pos()) and (event.type == pygame.MOUSEBUTTONDOWN) and curr == bgnd4:
+            print('ran')
+            for i in range(len(bl2)):
+                bl2[i].colr = 0
+            start = [True, True, True, True]
+            curr = bgnd5
+            recs = [a, b, c, d]
+            bl = [q, r, s, t]
+            recs1 = [a, b, c, d]
+            index2 = 0
+            gb = tileScreen("green_bricks.png", 0, 0, ww, hh, frameHeight, frameWidth)
+
+            sandBrick = tileScreen("sand_brick.png", 0, 300, ww, hh, 50, 150)
+            # strange bug that brick rects are added to this list
+            sandBrick = sandBrick[0::]
+            castleBrick = tileScreen('castle_bricks.png', 300, 0, ww, hh, 42, 75)
+
+            longBrick = tileScreen('long_bricks.png', 300, 300, ww, hh, 40, 100)
+        elif event.type == E_col_cir and curr ==bgnd4:
+            xxx = random.randint(0, screen1.w)
+            yyy = random.randint(0, screen1.h)
+            if len(circles4) > 0:
+                circles4.pop(0)
+            circles4.append(circleActor(xxx, yyy))
+        elif math.sqrt((circles5[0].pos[0] - x) ** 2 + (circles5[0].pos[1] - y) ** 2) <= circles5[0].radius and (event.type == pygame.MOUSEBUTTONDOWN) and curr == bgnd5:
+            events.append("climbdown")
+            xxxx = random.randint(0, screen1.w)
+            yyyy = random.randint(0, screen1.h)
+            circles5.pop(0)
+            circles5.append(circleActor(xxxx, yyyy))
+            rand1 = random.randint(0, 3)
+            if rand1 == 0 and len(gb) > 0:
+                rand = random.randint(0, len(gb) - 1)
+                gb.pop(rand)
+            elif rand1 == 1 and len(sandBrick) > 0:
+                rand = random.randint(0, len(sandBrick) - 1)
+                sandBrick.pop(rand)
+            elif rand1 == 2 and len(castleBrick) > 0:
+                rand = random.randint(0, len(castleBrick) - 1)
+                castleBrick.pop(rand)
+            elif rand1 == 3 and len(longBrick) > 0:
+                rand = random.randint(0, len(longBrick) - 1)
+                longBrick.pop(rand)
 
     [gb2[i].reset(screen) for i in range(len(gb2))]
     [sandBrick2[i].reset(screen) for i in range(len(sandBrick2))]
@@ -338,25 +478,38 @@ while True:
     screen.blit(curr.image, curr.rect)
 
     # shrink circle
-    curr = bgnd3
+    #curr = bgnd3
+
     if curr == bgnd1:
-        for i in range(len(px)):
 
-            if math.sqrt((px[i] - x) ** 2 + (py[i] - y) ** 2) <= radius and start[i] ==True :
+        if unrun2 == True:
+            #circles2i.pop(popper)
+            #circles2 = [circleActor(i[1][0], i[1][1]) for i in rp]
+            #circles2i = [circleActor(i[1][0], i[1][1]) for i in rp]
+            unrun2 = False
+
+        for i in range(len(circles2)):
+
+            if math.sqrt((circles2[i].pos[0] - x) ** 2 + (circles2[i].pos[1] - y) ** 2) <= circles2[i].radius and start[i] ==True :
                 events.append("climbdown")
-
+                draw.remove(i)
+                #popper = i
                 recs.remove(recs2[i])
                 recs1.remove(recs3[i])
                 print(bl)
                 #print(bl2[i])
                 bl.remove(bl2[i])
                 start[i] = False
+                unrun2 = True
                 #start[i::] == [True] * (4 - i) and start[0:i] == [False] * i
     elif curr == bgnd2:
-
+        if unrun2 == True:
+            circles2 = [circleActor(i[1][0], i[1][1]) for i in rp]
+            unrun2 = False
 
         if math.sqrt((px[index2] - x) ** 2 + (py[index2] - y) ** 2) <= radius and cols[index2] == True and start[index2] == True and index2<4:
             events.append("climbdown")
+
 
             recs.remove(recs2[index2])
             recs1.remove(recs3[index2])
@@ -381,7 +534,10 @@ while True:
                 recbri.append(longBrick[0].rect)
             unrun = True
         rpp = list(map(radpos, recbri))
+
         if unrun == True:
+            circles = [circleActor(i[1][0], i[1][1]) for i in rpp]
+
             pxx=[]
             pxy=[]
             for p in rpp:
@@ -421,6 +577,42 @@ while True:
             #bl.remove(bl2[index2])
                 start[i] = False
 
+    elif curr == bgnd4:
+
+
+        for i in range(len(circles4)):
+
+            if math.sqrt((circles4[i].pos[0] - x) ** 2 + (circles4[i].pos[1] - y) ** 2) <= circles4[i].radius and start[i] == True:
+                events.append("climbdown")
+                rand1 = random.randint(0,3)
+                if rand1 == 0 and len(gb) > 0:
+                    rand = random.randint(0, len(gb)-1)
+                    gb.pop(rand)
+                elif rand1 == 1 and len(sandBrick) > 0:
+                    rand = random.randint(0, len(sandBrick)-1)
+                    sandBrick.pop(rand)
+                elif rand1 == 2 and len(castleBrick) > 0:
+                    rand = random.randint(0, len(castleBrick)-1)
+                    castleBrick.pop(rand)
+                elif rand1 == 3 and len(longBrick) > 0:
+                    rand = random.randint(0, len(longBrick)-1)
+                    longBrick.pop(rand)
+    elif curr == bgnd5:
+
+
+
+        #wall checks
+        if circles5[0].pos[0] > screen1.w:
+            circles5[0].pos = (0,circles5[0].pos[1])
+        if circles5[0].pos[0] < 0:
+            circles5[0].pos = (screen1.w, circles5[0].pos[1])
+        if circles5[0].pos[1] > screen1.h:
+            circles5[0].pos = ( circles5[0].pos[0], 0)
+        if circles5[0].pos[1] < 0:
+            circles5[0].pos = (circles5[0].pos[0], screen1.h)
+
+
+                #radius and angle and create movement lists
 
 
     # circle=[targetingCircle(screen, (int(a[0] + a[2] / 2), int(a[1] + a[3] / 2)), a[2] / 2)]
@@ -429,20 +621,25 @@ while True:
     if len(recs) == 0:
         nextBut = createText(300, 300, "Next", 200)
         screen.blit(nextBut.tex,nextBut.rect)
-
+    if len(gb) == 0 and len(sandBrick) ==0 and len(castleBrick) ==0 and len(longBrick) ==0:
+        nextBut = createText(300, 300, "Next", 200)
+        screen.blit(nextBut.tex,nextBut.rect)
     # draw blockers
     color = (0, 0, 0)
     if curr == bgnd1 or curr == bgnd2:
         for rec in bl:
             pygame.draw.rect(screen, (colors[rec.colr].rgb[0]*255 , colors[rec.colr].rgb[1]*255 , colors[rec.colr].rgb[2]*255), rec.coord)
         # shrink circle
-
+        #rp2 = list(map(radpos, circles2))
         for oo in rp:
             drew2 = [drawCircle2(oo, radius)]
         if radius > 4:
             radius -= 3
         else:
             radius = int(a[2] / 2)
+
+        [circles2[i].draw() for i in draw]
+        [circles2[i].update() for i in range(len(circles2i))]
     elif curr == bgnd3:
         #print(len(gb))
         #print(len(sandBrick))
@@ -458,13 +655,39 @@ while True:
 
         [longBrick[i].draw(screen) for i in range(len(longBrick))]
         for oo in rpp:
-            drew2 = [drawCircle2(oo, radius)]
 
+            drew2 = [drawCircle2(oo, radius)]
+        [circles[i].draw() for i in  range(len(circles))]
+        [circles[i].update() for i in  range(len(circles))]
         if radius > 4:
             radius -= 3
         else:
             radius = int(a[2] / 4)
 
+    elif curr == bgnd4:
+        [gb[i].draw(screen) for i in range(len(gb))]
+
+        [sandBrick[i].draw(screen) for i in range(len(sandBrick))]
+
+        [castleBrick[i].draw(screen) for i in range(len(castleBrick))]
+
+        [longBrick[i].draw(screen) for i in range(len(longBrick))]
+
+
+        [circles4[i].draw() for i in range(len(circles4))]
+    elif curr == bgnd5:
+        [gb[i].draw(screen) for i in range(len(gb))]
+
+        [sandBrick[i].draw(screen) for i in range(len(sandBrick))]
+
+        [castleBrick[i].draw(screen) for i in range(len(castleBrick))]
+
+        [longBrick[i].draw(screen) for i in range(len(longBrick))]
+
+
+        circles5[0].updatePos()
+
+        [circles5[i].draw() for i in range(len(circles5))]
 
     [vineBlocks[i].draw(screen) for i in range(len(vineBlocks))]
 
