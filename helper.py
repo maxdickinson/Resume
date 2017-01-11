@@ -121,15 +121,14 @@ gb = spriteSheet("green_bricks.png",0,0,100,80,0,1)
 
 #print((screen1.w / 2) // 100)
 #print((screen1.h / 2) //80)
-print((screen1.w / 2))
-print((screen1.h / 2))
+
 
 def tileScreen(file,x,y,ww,hh,frameHeight,frameWidth):
     #must have one dimension of screen evenylly divide into frame dimension
     gb = []
     for i in range(int(ww // frameWidth)):
         for j in range(int(hh //frameHeight)):
-            print(i,j)
+
 
             gb.append(spriteSheet(file, x+frameWidth*i, y+frameHeight*j, frameWidth, frameHeight, 0, 1))
             if j == int((hh) //frameHeight)-1 and (hh-frameHeight* int((hh) // frameHeight)) > 0:
@@ -261,7 +260,7 @@ for p in rp:
 
 radius = int(a[2] / 2)
 nextBut = createText(300, 300, "Next", 200)
-curr = bgnd1
+curr = bgnd5
 colr = 0
 
 class block:
@@ -284,22 +283,75 @@ recbri = [gb[0].rect, sandBrick[0].rect, castleBrick[0].rect, longBrick[0].rect]
 recbri2 = [gb[0].rect, sandBrick[0].rect, castleBrick[0].rect, longBrick[0].rect]
 #recbri=[]
 #recbri2 = []
-for i in sandBrick:
-    print(i.rect)
-print("ADSASDASD")
-for i in gb:
-    print(i.rect)
+
+
 
 class circleActor(pygame.sprite.Sprite):
     def __init__(self,x,y):
-        self.pos = (x,y)
+        self.pos = (300,300)
         self.radius = 50
-        self.speed = random.randint(0, 4)
+        self.speed = random.randint(0, 1)
         self.i_hat = random.randint(-4, 4)
         self.j_hat = random.randint(-4, 4)
+
+        self.rect = pygame.draw.circle(screen, (255, 255, 0), self.pos, self.radius, 1)
+        self.personality = random.randint(1, 3)
+        #self.personality = 1
+
         if self.j_hat == 0:
             self.j_hat = 0.1
+        print("ran")
+        self.threshold_v = 1
+    def personalityCheck(self,position,v,a):
 
+        if self.personality == 1:
+
+
+            if abs(position[0] - self.rect.centerx) < 60 and abs (position[1] - self.rect.centery) < 60 and abs(position[0] - self.rect.centerx) >5 and abs (position[1] - self.rect.centery) > 5:
+                #approach fast and precise
+                if self.threshold_v > v:
+                    x1 = self.pos[0]
+                    x2 = position[0]
+                    y1 = self.pos[1]
+                    y2 = position[1]
+                    my =(y2-y1)
+                    mx = (x2-x1)
+                    self.pos = (x1 - mx//1, y1 - my//1)
+                    print("run2")
+                    #self.draw()
+
+        elif self.personality == 2:
+            x1 = self.pos[0]
+
+            y1 = self.pos[1]
+
+            self.pos = (x1 , y1 )
+
+            if abs(position[0] - self.rect.centerx) < 500 and abs (position[1] - self.rect.centery) < 500:
+               #slow and wide, scatter??
+                if self.threshold_v < v:
+                    x1 = self.pos[0]
+                    x2 = position[0]
+                    y1 = self.pos[1]
+                    y2 = position[1]
+                    my =(y2-y1)
+                    mx = (x2-x1)
+                    self.pos = (x1 - mx//19, y1 - my//19)
+                    print("run2")
+                    #self.draw()
+        elif self.personality == 3:
+            #teleport to left
+            if abs(position[0] - self.rect.centerx) < 10 and abs(position[1] - self.rect.centery) < 10:
+                x1 = self.pos[0]
+                x2 = position[0]
+                y1 = self.pos[1]
+                y2 = position[1]
+                my = (y2 - y1)
+                mx = (x2 - x1)
+                self.pos = (0, y1 - my*10)
+                print("run2")
+                # self.draw()
+                # dont touch center
     def draw(self):
         self.rect = pygame.draw.circle(screen, (255, 255, 0), self.pos, self.radius, 1)
     def update(self):
@@ -339,7 +391,6 @@ class circleActor(pygame.sprite.Sprite):
                 self.moveUp()
                 self.moveLeft()
             elif self.i_hat >= 0 and self.j_hat < 0:
-                print("ran")
                 self.moveDown()
                 self.moveRight()
             elif self.i_hat >= 0 and self.j_hat > 0:
@@ -354,7 +405,7 @@ circles2 = [circleActor(i[1][0], i[1][1]) for i in rp]
 circles2i = [circleActor(i[1][0], i[1][1]) for i in rp]
 circles4=[]
 circles5 = []
-[print(circles2[i].pos) for i in range(len(circles2))]
+#[print(circles2[i].pos) for i in range(len(circles2))]
 popper = 0
 draw = [i for i in range(len(circles2))]
 #print(circles2i)
@@ -367,11 +418,36 @@ yyyy = random.randint(0, screen1.h)
 
 circles5.append(circleActor(xxxx, yyyy))
 
-
+buf = []
+vels = []
+acc = []
+import math
 while True:
+    print(timer.get_time())
 
-    x, y = pygame.mouse.get_pos()
-
+    (x, y) = pygame.mouse.get_pos()
+    if len(buf) < 3:
+        buf.append((x,y))
+    elif len(buf) == 3:
+        buf.pop(0)
+        buf.append((x,y))
+    position = buf[-1]
+    if len(buf) == 3:
+        velocity = math.sqrt( (buf[1][1] - buf[0][1])**2 + (buf[1][0] - buf[0][0])**2 ) / timer.get_time() # (y2-y1 )**2+ (x2 -x1)**2 dist / time
+        if len(vels) < 2:
+            vels.append((velocity))
+        elif len(vels) == 2:
+            vels.pop(0)
+            vels.append(velocity)
+    if len(vels) ==2:
+        acceleration = (vels[1] - vels[0]) / timer.get_time()                           # pixels per frame
+        if len(acc) < 1:
+            acc.append((velocity))
+        elif len(vels) == 2:
+            acc.pop(0)
+            acc.append(acceleration)
+    print(timer.get_time())
+    print(buf,vels,acc)
     # erase
     # screen.blit(a.cover,a.rect)
     recs1 = list(map(pygame.Rect, recs))
@@ -398,7 +474,7 @@ while True:
                 index +=1
             #makes the other box change colors first
         elif start[0:4] == [False]*4 and nextBut.rect.collidepoint(pygame.mouse.get_pos()) and (event.type == pygame.MOUSEBUTTONDOWN) and curr == bgnd2:
-            print('ran')
+           # print('ran')
             for i in range(len(bl2)):
                 bl2[i].colr = 0
             start = [True,True,True,True]
@@ -408,7 +484,7 @@ while True:
             recs1 = [a, b, c, d]
             index2=0
         elif start[0:4] == [False]*4 and nextBut.rect.collidepoint(pygame.mouse.get_pos()) and (event.type == pygame.MOUSEBUTTONDOWN) and curr == bgnd3:
-            print('ran')
+            #print('ran')
             for i in range(len(bl2)):
                 bl2[i].colr = 0
             start = [True,True,True,True]
@@ -426,7 +502,7 @@ while True:
 
             longBrick = tileScreen('long_bricks.png', 300, 300, ww, hh, 40, 100)
         elif nextBut.rect.collidepoint(pygame.mouse.get_pos()) and (event.type == pygame.MOUSEBUTTONDOWN) and curr == bgnd4:
-            print('ran')
+           # print('ran')
             for i in range(len(bl2)):
                 bl2[i].colr = 0
             start = [True, True, True, True]
@@ -496,7 +572,7 @@ while True:
                 #popper = i
                 recs.remove(recs2[i])
                 recs1.remove(recs3[i])
-                print(bl)
+               # print(bl)
                 #print(bl2[i])
                 bl.remove(bl2[i])
                 start[i] = False
@@ -549,10 +625,10 @@ while True:
             #alter recbri and recbri 2
         #start = [True] * len(pxx)
         for i in range(len(pxx)):
-            print(pxx[i], pxy[i] , i,radius )
-            print(start[i])
+           # print(pxx[i], pxy[i] , i,radius )
+            #print(start[i])
             if math.sqrt((pxx[i] - x) ** 2 + (pxy[i] - y) ** 2) <= radius and start[i] == True:
-                print(i)
+                #print(i)
                 events.append("climbdown")
             #recbri.remove(recbri2[index2])
                 recbri.remove(recbri2[i])
@@ -598,18 +674,29 @@ while True:
                     rand = random.randint(0, len(longBrick)-1)
                     longBrick.pop(rand)
     elif curr == bgnd5:
-
-
-
-        #wall checks
+        if len(buf) != 0 and len(vels) != 0 and len(acc) != 0 and len(circles5)>0:
+            print("run3")
+            circles5[0].personalityCheck(buf[0],vels[0],acc[0])
         if circles5[0].pos[0] > screen1.w:
-            circles5[0].pos = (0,circles5[0].pos[1])
+            circles5[0].pos = (screen1.w - circles5[0].radius, circles5[0].pos[1])
+        if circles5[0].pos[0] < 0:
+            circles5[0].pos = (circles5[0].radius, circles5[0].pos[1])
+        if circles5[0].pos[1] > screen1.h:
+            circles5[0].pos = (circles5[0].pos[0], screen1.h - circles5[0].radius)
+        if circles5[0].pos[1] < 0:
+            circles5[0].pos = (circles5[0].pos[0], circles5[0].radius)
+
+
+        '''    if circles5[0].pos[0] > screen1.w:
+            circles5[0].pos = (screen1.w-circles5[0].radius,circles5[0].radius)
         if circles5[0].pos[0] < 0:
             circles5[0].pos = (screen1.w, circles5[0].pos[1])
         if circles5[0].pos[1] > screen1.h:
             circles5[0].pos = ( circles5[0].pos[0], 0)
         if circles5[0].pos[1] < 0:
             circles5[0].pos = (circles5[0].pos[0], screen1.h)
+            '''
+        # wall checks stop at wall
 
 
                 #radius and angle and create movement lists
@@ -686,7 +773,7 @@ while True:
 
 
         circles5[0].updatePos()
-
+        circles5[0].draw()
         [circles5[i].draw() for i in range(len(circles5))]
 
     [vineBlocks[i].draw(screen) for i in range(len(vineBlocks))]
@@ -714,5 +801,5 @@ while True:
     # update
     pygame.display.update()
     pygame.display.flip()
-    pygame.time.wait(30)
-    timer.tick(25)
+    #pygame.time.wait(30)
+    timer.tick(25) #wait 25 frames in the milllisecond. gives 1000/40 = 25
